@@ -48,6 +48,7 @@ public class Board {
                         System.out.println("  ");
                     }
 
+                    b[i][j] = 0;
                 }
             }
         }
