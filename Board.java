@@ -28,16 +28,24 @@ public class Board {
 
                     if (a == 1 && this.c > 0) {
                         this.p--;
-                        picnic(b, 2, i + 1, j);
+                        picnic(b, 2, i + 1, j + 2);
+                        boardPrinter(b);
+                        System.out.println("  ");
                     } else if (a == 2 && this.p > 0) {
                         this.c--;
                         picnic(b, 1, r - 1, j);
+                        boardPrinter(b);
+                        System.out.println("  ");
                     } else if (this.p > 0 && this.c == 0) {
                         this.p--;
                         picnic(b, 1, i, j);
+                        boardPrinter(b);
+                        System.out.println("  ");
                     } else {
                         this.c--;
                         picnic(b, 2, i, j);
+                        boardPrinter(b);
+                        System.out.println("  ");
                     }
 
                 }
@@ -51,20 +59,36 @@ public class Board {
     boolean isSafe(int board[][], int row, int col, int a) {
         int i, j;
 
-        /* Check this row on left side */
-        for (i = 0; i < col; i++)
+        if (board[row][col] != 0)
+            return false;
+
+        for (i = 0; i < board.length; i++)
             if (board[row][i] == a)
                 return false;
 
-        /* Check upper diagonal on left side */
-        for (i = row, j = col; i >= 0 && j >= 0; i--, j--)
-            if (board[i][j] == a)
+        for (i = 0; i < board.length; i++)
+            if (board[i][col] == a)
                 return false;
 
-        /* Check lower diagonal on left side */
-        for (i = row, j = col; j >= 0 && i < board.length; i++, j--)
-            if (board[i][j] == a)
+        for (i = row, j = col; i >= 0 && j >= 0; i--, j--)
+            if (board[i][j] == a) {
                 return false;
+            }
+
+        for (i = row, j = col; j >= 0 && i < board.length; i++, j--)
+            if (board[i][j] == a) {
+                return false;
+            }
+
+        for (i = row, j = col; i < board.length && j < board.length; i++, j++)
+            if (board[i][j] == a) {
+                return false;
+            }
+
+        for (i = row, j = col; j < board.length && i >= 0; i--, j++)
+            if (board[i][j] == a) {
+                return false;
+            }
 
         return true;
     }
