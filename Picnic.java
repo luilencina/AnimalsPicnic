@@ -1,10 +1,10 @@
 import java.io.IOException;
 
-public class Lanch {
+public class Picnic {
 
     private int t, p, c;
 
-    public Lanch(int tam, int pigs, int chickens) {
+    public Picnic(int tam, int pigs, int chickens) {
         this.t = tam;
         this.p = pigs;
         this.c = chickens;
@@ -12,10 +12,10 @@ public class Lanch {
 
     public void start() throws IOException {
         int[][] board = new int[t][t];
-        lanchTime(board, 1, 0, 0);
+        lunchTime(board, 1, 0, 0);
     }
 
-    public boolean lanchTime(int[][] b, int a, int col, int row) throws IOException {
+    public boolean lunchTime(int[][] b, int a, int col, int row) throws IOException {
 
         if (this.p <= 0 && this.c <= 0)
             return true;
@@ -26,12 +26,12 @@ public class Lanch {
                 if (isSafe(b, a, i, j)) {
                     if (a == 1 && this.c > 0) {
                         this.p--;
-                        if (lanchTime(b, 2, j + 1, i) == true)
+                        if (lunchTime(b, 2, j + 1, i) == true)
                             return true;
                     }
                     if (a == 2 && this.p > 0) {
                         this.c--;
-                        if (lanchTime(b, 1, j, i + 1) == true)
+                        if (lunchTime(b, 1, j, i + 1) == true)
                             return true;
                     }
                     b[i][j] = 0; // backtrack

@@ -6,7 +6,7 @@ public class Main {
         int pigs = Integer.parseInt(args[1]);
         int chickes = Integer.parseInt(args[2]);
         System.out.println("porquinhos" + " " + pigs + " " + "galinhas" + " " + chickes);
-        Lanch l = new Lanch(board, pigs, chickes);
+        Picnic l = new Picnic(board, pigs, chickes);
         l.start();
     }
 }
