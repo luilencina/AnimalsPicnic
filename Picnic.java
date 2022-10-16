@@ -1,5 +1,3 @@
-package src;
-
 import java.io.IOException;
 
 public class Picnic {
@@ -24,18 +22,10 @@ public class Picnic {
 
         for (int i = row; i < b.length; i++) {
             for (int j = col; j < b[i].length; j++) {
-                b[i][j] = a;
-                if (isSafe(b, a, i, j)) {
-                    if (a == 1 && this.c > 0) {
-                        this.p--;
-                        if (lunchTime(b, 2, j + 1, i) == true)
-                            return true;
-                    }
-                    if (a == 2 && this.p > 0) {
-                        this.c--;
-                        if (lunchTime(b, 1, j, i + 1) == true)
-                            return true;
-                    }
+                if (isSafe(b, i, j, a)) {
+                    b[i][j] = a;
+                   
+                    if(lunchTime(b, a, i, j) == true) return true;
                     b[i][j] = 0; // backtrack
                 }
             }
