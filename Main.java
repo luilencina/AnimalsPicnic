@@ -1,6 +1,5 @@
 import java.io.IOException;
 
-
 public class Main {
     public static void main(String[] args) throws IOException {
         // System.out.println("porquinhos" + " " + args[1] + " " + "galinhas" + " " +
@@ -9,7 +8,7 @@ public class Main {
         // Integer.parseInt(args[2]));
         // l.start();
 
-        Board x = new Board(4, 2, 1);
+        Board x = new Board(4, 3, 2);
         x.start();
     }
 }
