@@ -8,7 +8,8 @@ public class Main {
         // Integer.parseInt(args[2]));
         // l.start();
 
-        Board x = new Board(4, 3, 2);
+        Board x = new Board(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
+                Integer.parseInt(args[2]));
         x.start();
     }
 }
