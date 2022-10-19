@@ -13,14 +13,14 @@ public class Board {
         cont = 0; // quantidade de maneiras únicas possíveis de dispor no tabuleiro
         bPlaces = new int[length][length]; // matrjz de posições que ja não podem ser acessadas pelo animal oposto
         intercal = true; // se faz intercalado (um porquino e depois uma galinha) ou se bota todos
-        space = length * length;
+        space = length * length; // espaços livres no tabuleiro
     }
 
     public void start() throws IOException {
         int[][] board = new int[this.length][this.length];
         int x = (length * length);
 
-        if (this.c > x || this.p > x || (this.c + this.p) > x) {
+        if (this.c > x || this.p > x || (this.c + this.p) > x || this.c == 0 && this.p == 0) {
             System.out.println(" ");
             System.out.println("Não é possivel uma solução para este caso!");
             System.out.println(" ");
@@ -53,26 +53,22 @@ public class Board {
             return true;
         }
 
-        if (isPig) {
-            if (space < this.c) {
-                return cont > 0;
-            }
-        } else {
-            if (space < this.p) {
-                return cont > 0;
-            }
+        if (isPig && space < this.c) {
+            return true;
+        } else if (space < this.p) {
+            return true;
         }
 
         if (isPig && this.p == 0) {
             if (space == this.c) {
                 cont++;
-                return cont > 0;
+                return true;
             }
         }
         if (!isPig && this.c == 0) {
             if (space == this.p) {
                 cont++;
-                return cont > 0;
+                return true;
             }
         }
 
@@ -108,21 +104,22 @@ public class Board {
                             this.c++;
                         }
                     } else {
-                        isLocked(i, j, a, true, space);
+                        isLocked(i, j, a, true);
                         if (isPig && this.p > 0) {
                             xp = i;
                             yp = j;
                             this.p--;
-                            isLocked(i, j, a, false, space);
                             boolean pigs = (this.p > 0) ? picnic(b, 1, xp, yp, xc, yc)
                                     : picnic(b, 2, xp, yp, xc, yc);
+
+                            isLocked(i, j, a, false);
                             this.p++;
                         } else {
                             xc = i;
                             yc = j;
                             this.c--;
-                            isLocked(i, j, a, false, space);
                             picnic(b, 2, xp, yp, xc, yc);
+                            isLocked(i, j, a, false);
                             this.c++;
                         }
                     }
@@ -172,7 +169,7 @@ public class Board {
         return true;
     }
 
-    public boolean isLocked(int row, int col, int a, boolean isFree, int space) throws IOException {
+    public boolean isLocked(int row, int col, int a, boolean isFree) throws IOException {
         int i, j;
         boolean isPig = (a == 1) ? true : false;
 
@@ -233,17 +230,8 @@ public class Board {
                 space++;
 
         }
-
         if (space > (length * length))
             space = length * length;
-
-        if (this.c > space)
-            return false;
-
-        // System.out.println("espacos livres: " + space);
-        // System.out.println();
-        // placesPrinter(bPlaces);
-        // System.out.println();
 
         return true;
     }
