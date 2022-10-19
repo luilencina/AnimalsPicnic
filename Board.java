@@ -72,15 +72,8 @@ public class Board {
 
         for (int i = x; i < b.length; i++) {
             for (int j = y; j < b[i].length; j++) {
-                // ele pergunta "é de boa botar meu animal aqui ?"
                 if (isSafe(b, i, j, a)) {
-
-                    // caso sim ele adiciona o animal que eu quero
                     b[i][j] = a;
-
-                    // aqui ele verifica se precisa ser da forma intercalado ou botar todos de um
-                    // tipo e depois do outro
-                    // ambos metodos sao iguais so muda a verificação
 
                     if (intercal) {
                         if (isPig && this.c > 0) {
@@ -113,7 +106,10 @@ public class Board {
                             xp = i;
                             yp = j;
                             this.p--;
-                            boolean pigs = (this.p > 0) ? picnic(b, 1, xp, yp, xc, yc) : picnic(b, 2, xp, yp, xc, yc);
+                            if (isLocked(i, j, a, true))
+                                return false;
+                            boolean pigs = (this.p > 0) ? picnic(b, 1, xp, yp, xc, yc)
+                                    : picnic(b, 2, xp, yp, xc, yc);
                             this.p++;
                         } else {
                             xc = i;
@@ -122,6 +118,7 @@ public class Board {
                             picnic(b, 2, xp, yp, xc, yc);
                             this.c++;
                         }
+                        isLocked(i, j, a, false);
                     }
 
                     b[i][j] = 0; // backtrack
@@ -139,73 +136,92 @@ public class Board {
     // caso tiver ele não deixa rodar e tenta o proximo
     boolean isSafe(int board[][], int row, int col, int a) throws IOException {
         int i, j;
-        int isBig = this.p < this.c ? 1 : 2;
+        space = 0;
 
-        if (board[row][col] != 0 || board[row][col] == a)
+        if (board[row][col] != 0 || board[row][col] == a) {
             return false;
+        }
 
         for (i = 0; i < length; i++) {
-            if (board[row][i] != 0 && board[row][i] != a || board[i][col] != 0 && board[i][col] != a)
+            if (board[row][i] != 0 && board[row][i] != a || board[i][col] != 0 && board[i][col] != a) {
                 return false;
-            bPlaces[row][i] = isBig;
-            bPlaces[i][col] = isBig;
+            }
         }
 
-        for (i = row, j = col; i >= 0 && j >= 0; i--, j--) {
+        for (i = row, j = col; i >= 0 && j >= 0; i--, j--)
             if (board[i][j] != 0 && board[i][j] != a)
                 return false;
 
-            bPlaces[i][j] = isBig;
-        }
-
-        for (i = row, j = col; j >= 0 && i < length; i++, j--) {
+        for (i = row, j = col; j >= 0 && i < length; i++, j--)
             if (board[i][j] != 0 && board[i][j] != a)
                 return false;
-            bPlaces[i][j] = isBig;
-        }
 
-        for (i = row, j = col; j < length && i >= 0; i--, j++) {
+        for (i = row, j = col; j < length && i >= 0; i--, j++)
             if (board[i][j] != 0 && board[i][j] != a)
                 return false;
-            bPlaces[i][j] = isBig;
-        }
 
-        for (i = row, j = col; i < length && j < length; i++, j++) {
+        for (i = row, j = col; i < length && j < length; i++, j++)
             if (board[i][j] != 0 && board[i][j] != a)
                 return false;
-            bPlaces[i][j] = isBig;
-        }
 
         // System.out.println();
-        // boardPrinter(bPlaces);
+        // placesPrinter(bPlaces);
         // System.out.println();
 
         return true;
     }
 
-    // metodo para da quantidade de espaco
-    // ainda não sei onde botar essa validacao, teria que ser onde o intercal is
-    // false
-    // pq se eu botar todas os porquinhos e tiver menos espaço livre do que tem de
-    // galinhas, ele ja ignora essa solução e iria pra poxima
-    // mas não consegui achar onde exatamente e como exatamente fazer isso
+    public boolean isLocked(int row, int col, int a, boolean isFree) throws IOException {
+        int i, j;
+        boolean isPig = (a == 1) ? true : false;
 
-    boolean isSpace(int a) throws IOException {
-        int animal = (a == 1) ? this.p : this.c;
-        space = 0;
-
-        for (int i = 0; i < bPlaces.length; i++) {
-            for (int j = 0; j < bPlaces[i].length; j++) {
-                if (bPlaces[i][j] == 0) {
-                    space++;
-                }
-                bPlaces[i][j] = 0; // backtrack
+        for (i = 0; i < length; i++) {
+            if (isPig && isFree) {
+                bPlaces[row][i] = bPlaces[row][i] + 1;
+                bPlaces[i][col] = bPlaces[i][col] + 1;
+            } else if (isPig && !isFree) {
+                bPlaces[row][i] = bPlaces[row][i] - 1;
+                bPlaces[i][col] = bPlaces[i][col] - 1;
             }
+            int sRow = (bPlaces[row][i] == 0) ? space++ : 0;
+            int sCol = (bPlaces[i][col] == 0) ? space++ : 0;
         }
 
-        if (animal > space) {
-            return false;
+        for (i = row, j = col; i >= 0 && j >= 0; i--, j--) {
+            int p = (isPig && isFree) ? (bPlaces[i][j] = bPlaces[i][j] + 1)
+                    : (isPig && !isFree) ? (bPlaces[i][j] = bPlaces[i][j] - 1) : bPlaces[i][j];
+            int sRow = (bPlaces[row][i] == 0) ? space++ : 0;
+
         }
+
+        for (i = row, j = col; j >= 0 && i < length; i++, j--) {
+            int p = (isPig && isFree) ? (bPlaces[i][j] = bPlaces[i][j] + 1)
+                    : (isPig && !isFree) ? (bPlaces[i][j] = bPlaces[i][j] - 1) : bPlaces[i][j];
+            int sRow = (bPlaces[row][i] == 0) ? space++ : 0;
+
+        }
+
+        for (i = row, j = col; j < length && i >= 0; i--, j++) {
+            int p = (isPig && isFree) ? (bPlaces[i][j] = bPlaces[i][j] + 1)
+                    : (isPig && !isFree) ? (bPlaces[i][j] = bPlaces[i][j] - 1) : bPlaces[i][j];
+            int sRow = (bPlaces[row][i] == 0) ? space++ : 0;
+
+        }
+
+        for (i = row, j = col; i < length && j < length; i++, j++) {
+            int p = (isPig && isFree) ? (bPlaces[i][j] = bPlaces[i][j] + 1)
+                    : (isPig && !isFree) ? (bPlaces[i][j] = bPlaces[i][j] - 1) : bPlaces[i][j];
+            int sRow = (bPlaces[row][i] == 0) ? space++ : 0;
+
+        }
+
+        if (this.c > space)
+            return false;
+
+        System.out.println("espacos livres: " + space);
+        System.out.println();
+        placesPrinter(bPlaces);
+        System.out.println();
 
         return true;
     }
@@ -221,6 +237,15 @@ public class Board {
                     System.out.print("G" + "  ");
                 if (board[i][j] == 0)
                     System.out.print("." + "  ");
+            }
+            System.out.println("  ");
+        }
+    }
+
+    public static void placesPrinter(int[][] board) throws IOException {
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[0].length; j++) {
+                System.out.print(board[i][j] + "  ");
             }
             System.out.println("  ");
         }
