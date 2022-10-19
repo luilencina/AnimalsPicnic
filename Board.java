@@ -25,7 +25,8 @@ public class Board {
             System.out.println("Não é possivel uma solução para este caso!");
             System.out.println(" ");
         } else {
-            intercal = ((this.p * 2) >= this.c) || ((this.c * 2) >= this.p) ? false : true;
+            intercal = (this.p * 2) <= this.c || (this.c * 2) <= this.p ? false : true;
+
             int isA = intercal ? (this.p < this.c) ? 1 : 2 : (this.p > this.c) ? 1 : 2;
             picnic(board, isA, 0, 0, 0, 0);
         }
@@ -55,7 +56,7 @@ public class Board {
             for (int j = y; j < b[i].length; j++) {
                 if (isSafe(b, i, j, a)) {
                     b[i][j] = a;
-                    if (!intercal) {
+                    if (intercal) {
                         if (isPig && this.c > 0) {
                             xp = i;
                             yp = j;
