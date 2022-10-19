@@ -41,7 +41,7 @@ public class Board {
 
     public boolean picnic(int[][] b, int a, int xp, int yp, int xc, int yc) throws IOException {
         boolean isPig = (a == 1) ? true : false;
-
+        int animal = isPig ? 2 : 1;
         int x = isPig ? xp : xc;
         int y = isPig ? yp : yc;
 
@@ -56,6 +56,7 @@ public class Board {
             for (int j = y; j < b[i].length; j++) {
                 if (isSafe(b, i, j, a)) {
                     b[i][j] = a;
+
                     if (intercal) {
                         if (isPig && this.c > 0) {
                             xp = i;
@@ -87,10 +88,7 @@ public class Board {
                             xp = i;
                             yp = j;
                             this.p--;
-                            if (this.p > 0)
-                                picnic(b, 1, xp, yp, xc, yc);
-                            if (this.p <= 0)
-                                picnic(b, 2, xp, yp, xc, yc);
+                            boolean pigs = (this.p > 0) ? picnic(b, 1, xp, yp, xc, yc) : picnic(b, 2, xp, yp, xc, yc);
                             this.p++;
                         } else {
                             xc = i;
@@ -112,6 +110,7 @@ public class Board {
 
     boolean isSafe(int board[][], int row, int col, int a) throws IOException {
         int i, j;
+        int isBig = this.p < this.c ? 1 : 2;
 
         if (board[row][col] != 0 || board[row][col] == a)
             return false;
@@ -119,44 +118,45 @@ public class Board {
         for (i = 0; i < length; i++) {
             if (board[row][i] != 0 && board[row][i] != a || board[i][col] != 0 && board[i][col] != a)
                 return false;
-            bPlaces[row][i] = a;
-            bPlaces[i][col] = a;
+            bPlaces[row][i] = isBig;
+            bPlaces[i][col] = isBig;
         }
 
         for (i = row, j = col; i >= 0 && j >= 0; i--, j--) {
             if (board[i][j] != 0 && board[i][j] != a)
                 return false;
 
-            bPlaces[i][j] = a;
+            bPlaces[i][j] = isBig;
         }
 
         for (i = row, j = col; j >= 0 && i < length; i++, j--) {
             if (board[i][j] != 0 && board[i][j] != a)
                 return false;
-            bPlaces[i][j] = a;
+            bPlaces[i][j] = isBig;
         }
 
         for (i = row, j = col; j < length && i >= 0; i--, j++) {
             if (board[i][j] != 0 && board[i][j] != a)
                 return false;
-            bPlaces[i][j] = a;
+            bPlaces[i][j] = isBig;
         }
 
         for (i = row, j = col; i < length && j < length; i++, j++) {
             if (board[i][j] != 0 && board[i][j] != a)
                 return false;
-            bPlaces[i][j] = a;
+            bPlaces[i][j] = isBig;
         }
 
-        // System.out.println(" ");
+        // System.out.println();
         // boardPrinter(bPlaces);
-        // System.out.println(" ");
+        // System.out.println();
 
         return true;
     }
 
     boolean isSpace(int a) throws IOException {
         int animal = (a == 1) ? this.p : this.c;
+        space = 0;
 
         for (int i = 0; i < bPlaces.length; i++) {
             for (int j = 0; j < bPlaces[i].length; j++) {
@@ -167,10 +167,10 @@ public class Board {
             }
         }
 
-        if (animal > space)
+        if (animal > space) {
             return false;
+        }
 
-        space = 0;
         return true;
     }
 
