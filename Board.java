@@ -4,6 +4,7 @@ public class Board {
 
     private int length, p, c, cont, space;
     private int[][] bPlaces;
+    private boolean intercal;
 
     public Board(int length, int pigs, int chickens) {
         this.length = length;
@@ -12,6 +13,7 @@ public class Board {
         cont = 0;
         bPlaces = new int[length][length];
         space = 0;
+        intercal = true;
     }
 
     public void start() throws IOException {
@@ -23,8 +25,9 @@ public class Board {
             System.out.println("Não é possivel uma solução para este caso!");
             System.out.println(" ");
         } else {
-            int isBig = this.p > this.c ? 1 : 2;
-            picnic(board, isBig, 0, 0, 0, 0);
+            intercal = ((this.p * 2) >= this.c) || ((this.c * 2) >= this.p) ? false : true;
+            int isA = intercal ? (this.p < this.c) ? 1 : 2 : (this.p > this.c) ? 1 : 2;
+            picnic(board, isA, 0, 0, 0, 0);
         }
 
         System.out.println("Tamanho do tabuleiro: " + length + "x" + length);
@@ -37,13 +40,6 @@ public class Board {
 
     public boolean picnic(int[][] b, int a, int xp, int yp, int xc, int yc) throws IOException {
         boolean isPig = (a == 1) ? true : false;
-        boolean intercal = false;
-        int animal = isPig ? 2 : 1;
-        // if (intercal) {
-        // a = this.p > this.c ? 1 : 2;
-        // } else {
-        // a = this.p < this.c ? 1 : 2;
-        // }
 
         int x = isPig ? xp : xc;
         int y = isPig ? yp : yc;
@@ -59,8 +55,7 @@ public class Board {
             for (int j = y; j < b[i].length; j++) {
                 if (isSafe(b, i, j, a)) {
                     b[i][j] = a;
-
-                    if (intercal) {
+                    if (!intercal) {
                         if (isPig && this.c > 0) {
                             xp = i;
                             yp = j;
@@ -91,15 +86,17 @@ public class Board {
                             xp = i;
                             yp = j;
                             this.p--;
-                            boolean pig = (this.p > 0) ? picnic(b, 1, xp, yp, xc, yc)
-                                    : picnic(b, 2, xp, yp, xc, yc);
+                            if (this.p > 0)
+                                picnic(b, 1, xp, yp, xc, yc);
+                            if (this.p <= 0)
+                                picnic(b, 2, xp, yp, xc, yc);
                             this.p++;
                         } else {
                             xc = i;
                             yc = j;
-                            this.c++;
-                            picnic(b, 1, xp, yp, xc, yc);
                             this.c--;
+                            picnic(b, 2, xp, yp, xc, yc);
+                            this.c++;
                         }
                     }
 
@@ -157,7 +154,7 @@ public class Board {
         return true;
     }
 
-    public boolean isSpace(int a) throws IOException {
+    boolean isSpace(int a) throws IOException {
         int animal = (a == 1) ? this.p : this.c;
 
         for (int i = 0; i < bPlaces.length; i++) {
