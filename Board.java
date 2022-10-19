@@ -12,14 +12,10 @@ public class Board {
         this.c = chickens; // quantidade de galinhas
         cont = 0; // quantidade de maneiras únicas possíveis de dispor no tabuleiro
         bPlaces = new int[length][length]; // matrjz de posições que ja não podem ser acessadas pelo animal oposto
-        space = 0; // quantidade de espaços livres ainda
         intercal = true; // se faz intercalado (um porquino e depois uma galinha) ou se bota todos
-                         // primeiro e depois encaixa os outros
+        space = length * length;
     }
 
-    // esse metodo apenas cria o tabuleito e faz uma mini-verificação de casos em
-    // que o resultado da 0 de cara
-    // caso contrário ele chama o pinic
     public void start() throws IOException {
         int[][] board = new int[this.length][this.length];
         int x = (length * length);
@@ -31,7 +27,7 @@ public class Board {
         } else {
             intercal = (this.p * 2) <= this.c || (this.c * 2) <= this.p ? false : true;
 
-            int isA = intercal ? (this.p < this.c) ? 1 : 2 : (this.p > this.c) ? 1 : 2;
+            int isA = (this.p < this.c) ? 1 : 2;
             picnic(board, isA, 0, 0, 0, 0);
         }
 
@@ -43,31 +39,41 @@ public class Board {
         System.out.println(" ");
     }
 
-    // metodo responsavel pela disposicao dos porcos e galinhas no tabuleiro
     public boolean picnic(int[][] b, int a, int xp, int yp, int xc, int yc) throws IOException {
 
-        // verifica se o animal mandado é um porqiunho
-        // caso !isPig, é uma galiha // a é o animal, logo se a == 1 é porco
         boolean isPig = (a == 1) ? true : false;
-        int animal = isPig ? 2 : 1;
 
-        // caso ele for um porquinho, começa da ultima posicão do porquinho (linha e
-        // coluna) - > (x, y)
-        // xp = ultima posicão da linha do porquinho // yp = ultima posicao da linha dos
-        // porquinhos
-        // yp = ultima posicao da coluna do porquinho || yc = ultima posicao da linha
-        // das galinhas
         int x = isPig ? xp : xc;
         int y = isPig ? yp : yc;
 
-        // caso acabe os porquinhos e as galinhas (não tem mais o que botar) e encontrou
-        // a solução
-        // metodo cont++ (mais uma solucao) e retorna true
         if (this.p <= 0 && this.c <= 0) {
             // boardPrinter(b);
             // System.out.println(" ");
             cont++;
             return true;
+        }
+
+        if (isPig) {
+            if (space < this.c) {
+                return cont > 0;
+            }
+        } else {
+            if (space < this.p) {
+                return cont > 0;
+            }
+        }
+
+        if (isPig && this.p == 0) {
+            if (space == this.c) {
+                cont++;
+                return cont > 0;
+            }
+        }
+        if (!isPig && this.c == 0) {
+            if (space == this.p) {
+                cont++;
+                return cont > 0;
+            }
         }
 
         for (int i = x; i < b.length; i++) {
@@ -102,12 +108,12 @@ public class Board {
                             this.c++;
                         }
                     } else {
+                        isLocked(i, j, a, true, space);
                         if (isPig && this.p > 0) {
                             xp = i;
                             yp = j;
                             this.p--;
-                            if (isLocked(i, j, a, true))
-                                return false;
+                            isLocked(i, j, a, false, space);
                             boolean pigs = (this.p > 0) ? picnic(b, 1, xp, yp, xc, yc)
                                     : picnic(b, 2, xp, yp, xc, yc);
                             this.p++;
@@ -115,10 +121,10 @@ public class Board {
                             xc = i;
                             yc = j;
                             this.c--;
+                            isLocked(i, j, a, false, space);
                             picnic(b, 2, xp, yp, xc, yc);
                             this.c++;
                         }
-                        isLocked(i, j, a, false);
                     }
 
                     b[i][j] = 0; // backtrack
@@ -130,13 +136,8 @@ public class Board {
 
     }
 
-    // esse metodo verifica se ta tudo bem botar o porquinho na poxicao [x][y] do
-    // tabuleiro
-    // ele verifica se não tem nenuhma galinha na mesma coluna, linha e diagonal
-    // caso tiver ele não deixa rodar e tenta o proximo
     boolean isSafe(int board[][], int row, int col, int a) throws IOException {
         int i, j;
-        space = 0;
 
         if (board[row][col] != 0 || board[row][col] == a) {
             return false;
@@ -171,11 +172,15 @@ public class Board {
         return true;
     }
 
-    public boolean isLocked(int row, int col, int a, boolean isFree) throws IOException {
+    public boolean isLocked(int row, int col, int a, boolean isFree, int space) throws IOException {
         int i, j;
         boolean isPig = (a == 1) ? true : false;
 
         for (i = 0; i < length; i++) {
+            if (isFree && bPlaces[row][i] == 0)
+                space--;
+            if (isFree && bPlaces[i][col] == 0)
+                space--;
             if (isPig && isFree) {
                 bPlaces[row][i] = bPlaces[row][i] + 1;
                 bPlaces[i][col] = bPlaces[i][col] + 1;
@@ -183,45 +188,62 @@ public class Board {
                 bPlaces[row][i] = bPlaces[row][i] - 1;
                 bPlaces[i][col] = bPlaces[i][col] - 1;
             }
-            int sRow = (bPlaces[row][i] == 0) ? space++ : 0;
-            int sCol = (bPlaces[i][col] == 0) ? space++ : 0;
+            if (!isFree && bPlaces[row][i] == 0)
+                space++;
+            if (!isFree && bPlaces[i][col] == 0)
+                space++;
         }
 
         for (i = row, j = col; i >= 0 && j >= 0; i--, j--) {
+            if (isFree && bPlaces[i][j] == 0)
+                space--;
             int p = (isPig && isFree) ? (bPlaces[i][j] = bPlaces[i][j] + 1)
                     : (isPig && !isFree) ? (bPlaces[i][j] = bPlaces[i][j] - 1) : bPlaces[i][j];
-            int sRow = (bPlaces[row][i] == 0) ? space++ : 0;
+            if (!isFree && bPlaces[i][j] == 0)
+                space++;
 
         }
 
         for (i = row, j = col; j >= 0 && i < length; i++, j--) {
+            if (isFree && bPlaces[i][j] == 0)
+                space--;
             int p = (isPig && isFree) ? (bPlaces[i][j] = bPlaces[i][j] + 1)
                     : (isPig && !isFree) ? (bPlaces[i][j] = bPlaces[i][j] - 1) : bPlaces[i][j];
-            int sRow = (bPlaces[row][i] == 0) ? space++ : 0;
+            if (!isFree && bPlaces[i][j] == 0)
+                space++;
 
         }
 
         for (i = row, j = col; j < length && i >= 0; i--, j++) {
+            if (isFree && bPlaces[i][j] == 0)
+                space--;
             int p = (isPig && isFree) ? (bPlaces[i][j] = bPlaces[i][j] + 1)
                     : (isPig && !isFree) ? (bPlaces[i][j] = bPlaces[i][j] - 1) : bPlaces[i][j];
-            int sRow = (bPlaces[row][i] == 0) ? space++ : 0;
+            if (!isFree && bPlaces[i][j] == 0)
+                space++;
 
         }
 
         for (i = row, j = col; i < length && j < length; i++, j++) {
+            if (isFree && bPlaces[i][j] == 0)
+                space--;
             int p = (isPig && isFree) ? (bPlaces[i][j] = bPlaces[i][j] + 1)
                     : (isPig && !isFree) ? (bPlaces[i][j] = bPlaces[i][j] - 1) : bPlaces[i][j];
-            int sRow = (bPlaces[row][i] == 0) ? space++ : 0;
+            if (!isFree && bPlaces[i][j] == 0)
+                space++;
 
         }
+
+        if (space > (length * length))
+            space = length * length;
 
         if (this.c > space)
             return false;
 
-        System.out.println("espacos livres: " + space);
-        System.out.println();
-        placesPrinter(bPlaces);
-        System.out.println();
+        // System.out.println("espacos livres: " + space);
+        // System.out.println();
+        // placesPrinter(bPlaces);
+        // System.out.println();
 
         return true;
     }
