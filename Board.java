@@ -7,13 +7,13 @@ public class Board {
     private boolean intercal;
 
     public Board(int length, int pigs, int chickens) {
-        this.length = length; // tamanho do tabuleiro
+        this.length = length; // tamanho do bPlaces
         this.p = pigs; // quantidade de porquinhos
         this.c = chickens; // quantidade de galinhas
-        cont = 0; // quantidade de maneiras únicas possíveis de dispor no tabuleiro
+        cont = 0; // quantidade de maneiras únicas possíveis de dispor no bPlaces
         bPlaces = new int[length][length]; // matrjz de posições que ja não podem ser acessadas pelo animal oposto
         intercal = true; // se faz intercalado (um porquino e depois uma galinha) ou se bota todos
-        space = length * length; // espaços livres no tabuleiro
+        space = length * length; // espaços livres no bPlaces
     }
 
     public void start() throws IOException {
@@ -25,13 +25,13 @@ public class Board {
             System.out.println("Não é possivel uma solução para este caso!");
             System.out.println(" ");
         } else {
-            intercal = (this.p * 2) <= this.c || (this.c * 2) <= this.p ? false : true;
-
+            // intercal = (this.p * 2) <= this.c || (this.c * 2) <= this.p ? false : true;
+            intercal = true;
             int isA = (this.p < this.c) ? 1 : 2;
             picnic(board, isA, 0, 0, 0, 0);
         }
 
-        System.out.println("Tamanho do tabuleiro: " + length + "x" + length);
+        System.out.println("Tamanho do bPlaces: " + length + "x" + length);
         System.out.println("Quantidade de porquinhos: " + p);
         System.out.println("Quantidade de galinhas: " + c);
         System.out.println(" ");
@@ -48,29 +48,36 @@ public class Board {
 
         if (this.p <= 0 && this.c <= 0) {
             // boardPrinter(b);
-            // System.out.println(" ");
             cont++;
+            // System.out.println("quantidade p e c == 0 " + cont);
+            // System.out.println("porquinhos " + this.p + " galinhas " + this.c);
             return true;
         }
 
         if (isPig && space < this.c) {
             return true;
-        } else if (space < this.p) {
+        } else if (!isPig && space < this.p) {
             return true;
         }
 
-        if (isPig && this.p == 0) {
+        if (this.p == 0 && space == this.c) {
+            // a = 2;
+            // System.out.println("spaces free " + space + " galinhas " + this.c);
             if (space == this.c) {
                 cont++;
+                // System.out.println("cont space == this.c: " + cont);
                 return true;
             }
         }
-        if (!isPig && this.c == 0) {
-            if (space == this.p) {
-                cont++;
-                return true;
-            }
-        }
+
+        // if (!isPig && this.c == 0) {
+        // a = 1;
+        // if (space == this.p) {
+        // cont++;
+        // System.out.println("cont space == this.p: " + cont);
+        // return true;
+        // }
+        // }
 
         for (int i = x; i < b.length; i++) {
             for (int j = y; j < b[i].length; j++) {
@@ -78,6 +85,8 @@ public class Board {
                     b[i][j] = a;
 
                     if (intercal) {
+                        // desocupaEspacosBloqueados(i, j, a, true);
+
                         if (isPig && this.c > 0) {
                             xp = i;
                             yp = j;
@@ -104,26 +113,26 @@ public class Board {
                             this.c++;
                         }
                     } else {
-                        isLocked(i, j, a, true);
                         if (isPig && this.p > 0) {
                             xp = i;
                             yp = j;
                             this.p--;
-                            boolean pigs = (this.p > 0) ? picnic(b, 1, xp, yp, xc, yc)
-                                    : picnic(b, 2, xp, yp, xc, yc);
-
-                            isLocked(i, j, a, false);
+                            if (this.p > 0) {
+                                picnic(b, 1, xp, yp, xc, yc);
+                            } else {
+                                picnic(b, 2, xp, yp, xc, yc);
+                            }
                             this.p++;
-                        } else {
+                        } else if (!isPig && this.c > 0) {
                             xc = i;
                             yc = j;
                             this.c--;
                             picnic(b, 2, xp, yp, xc, yc);
-                            isLocked(i, j, a, false);
                             this.c++;
                         }
                     }
 
+                    // desocupaEspacosBloqueados(i, j, a, false);
                     b[i][j] = 0; // backtrack
                 }
             }
@@ -162,16 +171,15 @@ public class Board {
             if (board[i][j] != 0 && board[i][j] != a)
                 return false;
 
-        // System.out.println();
-        // placesPrinter(bPlaces);
-        // System.out.println();
-
         return true;
     }
 
     public boolean isLocked(int row, int col, int a, boolean isFree) throws IOException {
         int i, j;
         boolean isPig = (a == 1) ? true : false;
+
+        if (!isPig)
+            return false;
 
         for (i = 0; i < length; i++) {
             if (isFree && bPlaces[row][i] == 0)
@@ -236,8 +244,67 @@ public class Board {
         return true;
     }
 
-    // metodo resposavel apenas por printar de maneira "bonitinha" as matrizes com
-    // porquinhos e galinhas
+    private boolean desocupaEspacosBloqueados(int row, int col, int a, boolean isFree) {
+        boolean isPig = (a == 1) ? true : false;
+
+        if (!isPig)
+            return false;
+
+        for (int i = 0; i < length; i++) {
+            if (isFree && bPlaces[row][i] == 0)
+                space--;
+            bPlaces[row][i] = bPlaces[row][i] - 1;
+            if (bPlaces[row][i] == 0) {
+                space++;
+            }
+            if (isPig && isFree) {
+                bPlaces[row][i] = bPlaces[row][i] + 1;
+                bPlaces[i][col] = bPlaces[i][col] + 1;
+            } else if (isPig && !isFree) {
+                bPlaces[row][i] = bPlaces[row][i] - 1;
+                bPlaces[i][col] = bPlaces[i][col] - 1;
+            }
+        }
+
+        for (int i = row, j = col; i >= 0 && j >= 0; i--, j--) {
+            if (isFree && bPlaces[i][j] == 0)
+                space--;
+            int p = (isPig && isFree) ? (bPlaces[i][j] = bPlaces[i][j] + 1)
+                    : (isPig && !isFree) ? (bPlaces[i][j] = bPlaces[i][j] - 1) : bPlaces[i][j];
+            if (!isFree && bPlaces[i][j] == 0)
+                space++;
+        }
+
+        for (int i = row, j = col; j >= 0 && i < length; i++, j--) {
+            if (isFree && bPlaces[i][j] == 0)
+                space--;
+            int p = (isPig && isFree) ? (bPlaces[i][j] = bPlaces[i][j] + 1)
+                    : (isPig && !isFree) ? (bPlaces[i][j] = bPlaces[i][j] - 1) : bPlaces[i][j];
+            if (!isFree && bPlaces[i][j] == 0)
+                space++;
+        }
+
+        for (int i = row, j = col; i < length && j < length; i++, j++) {
+            if (isFree && bPlaces[i][j] == 0)
+                space--;
+            int p = (isPig && isFree) ? (bPlaces[i][j] = bPlaces[i][j] + 1)
+                    : (isPig && !isFree) ? (bPlaces[i][j] = bPlaces[i][j] - 1) : bPlaces[i][j];
+            if (!isFree && bPlaces[i][j] == 0)
+                space++;
+        }
+
+        for (int i = row, j = col; j < length && i >= 0; i--, j++) {
+            if (isFree && bPlaces[i][j] == 0)
+                space--;
+            int p = (isPig && isFree) ? (bPlaces[i][j] = bPlaces[i][j] + 1)
+                    : (isPig && !isFree) ? (bPlaces[i][j] = bPlaces[i][j] - 1) : bPlaces[i][j];
+            if (!isFree && bPlaces[i][j] == 0)
+                space++;
+        }
+
+        return true;
+    }
+
     public static void boardPrinter(int[][] board) throws IOException {
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[0].length; j++) {

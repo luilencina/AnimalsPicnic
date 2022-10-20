@@ -7,8 +7,8 @@ public class Main {
                 Integer.parseInt(args[2]));
         SimpleDateFormat t = new SimpleDateFormat("hh:mm:ss,SSS");
         long start = System.currentTimeMillis();
-        // Board x = new Board(8, 4,
-        // 24);
+        // Board x = new Board(4, 3,
+        // 2);
         x.start();
         long elapsed = System.currentTimeMillis() - start;
         System.out.println("o metodo executou em " + t.format(elapsed));
