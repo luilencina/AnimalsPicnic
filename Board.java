@@ -26,7 +26,7 @@ public class Board {
             System.out.println(" ");
         } else {
             // intercal = (this.p * 2) <= this.c || (this.c * 2) <= this.p ? false : true;
-            intercal = true;
+            intercal = false;
             int isA = (this.p < this.c) ? 1 : 2;
             picnic(board, isA, 0, 0, 0, 0);
         }
@@ -39,7 +39,7 @@ public class Board {
         System.out.println(" ");
     }
 
-    public boolean picnic(int[][] b, int a, int xp, int yp, int xc, int yc) throws IOException {
+    boolean picnic(int[][] b, int a, int xp, int yp, int xc, int yc) throws IOException {
 
         boolean isPig = (a == 1) ? true : false;
 
@@ -47,45 +47,32 @@ public class Board {
         int y = isPig ? yp : yc;
 
         if (this.p <= 0 && this.c <= 0) {
-            // boardPrinter(b);
             cont++;
-            // System.out.println("quantidade p e c == 0 " + cont);
-            // System.out.println("porquinhos " + this.p + " galinhas " + this.c);
+            System.out.println("quantidade p e c == 0 " + cont);
+            System.out.println("porquinhos " + this.p + " galinhas " + this.c);
             return true;
         }
 
-        if (isPig && space < this.c) {
-            return true;
-        } else if (!isPig && space < this.p) {
-            return true;
-        }
+        // if (isPig && space < this.c) {
+        // return false;
+        // }
 
-        if (this.p == 0 && space == this.c) {
-            // a = 2;
-            // System.out.println("spaces free " + space + " galinhas " + this.c);
+        if (!isPig && this.p == 0) {
             if (space == this.c) {
                 cont++;
-                // System.out.println("cont space == this.c: " + cont);
                 return true;
             }
+            if (space < this.c)
+                return false;
         }
-
-        // if (!isPig && this.c == 0) {
-        // a = 1;
-        // if (space == this.p) {
-        // cont++;
-        // System.out.println("cont space == this.p: " + cont);
-        // return true;
-        // }
-        // }
 
         for (int i = x; i < b.length; i++) {
             for (int j = y; j < b[i].length; j++) {
                 if (isSafe(b, i, j, a)) {
+                    desocupaEspacosBloqueados(i, j, a, true);
                     b[i][j] = a;
 
                     if (intercal) {
-                        // desocupaEspacosBloqueados(i, j, a, true);
 
                         if (isPig && this.c > 0) {
                             xp = i;
@@ -113,14 +100,20 @@ public class Board {
                             this.c++;
                         }
                     } else {
+
                         if (isPig && this.p > 0) {
                             xp = i;
                             yp = j;
                             this.p--;
-                            if (this.p > 0) {
+                            // if (j < length) {
+                            if (this.p < 0 && j < length) {
+                                picnic(b, 1, xp, yp, xc + 1, yc);
+                            } else if (j > length) {
+                                picnic(b, 2, xp, yp, xc, yc + 1);
+                            } else if (this.p > 0) {
                                 picnic(b, 1, xp, yp, xc, yc);
                             } else {
-                                picnic(b, 2, xp, yp, xc, yc);
+                                picnic(b, 2, xp, yp, xc, yc + 1);
                             }
                             this.p++;
                         } else if (!isPig && this.c > 0) {
@@ -131,8 +124,12 @@ public class Board {
                             this.c++;
                         }
                     }
+                    // picnic(b, 2, xp, yp, xc, yc + 1);
+                    // } else {
+                    // picnic(b, 1, xp, yp, xc + 1, yc);
+                    // }
 
-                    // desocupaEspacosBloqueados(i, j, a, false);
+                    desocupaEspacosBloqueados(i, j, a, false);
                     b[i][j] = 0; // backtrack
                 }
             }
